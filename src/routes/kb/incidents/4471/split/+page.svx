@@ -13,17 +13,16 @@ signature: Tim Phillips
   import RenderStamp from '#lib/kb/RenderStamp.svelte';
 
   const repo = 'https://github.com/tim-phillips/mega-s01e03-dates/issues';
-  const filed = { parser: `${repo}/1`, hint: `${repo}/2`, shift: `${repo}/3` };
+  const filed = { parser: `${repo}/1`, hint: `${repo}/2` };
 </script>
 
-[#4471](/kb/incidents/4471) says one bug, one fix queued. Its reports say otherwise: each cause
-below is its own bug with its own fix, and each now has its own ticket. The fix queued for the
-parser closes only its own row.
+[#4471](/kb/incidents/4471) says one bug, one fix queued. Its reports say otherwise: three bugs,
+each with its own fix and its own ticket. The fix queued for the parser closes only its own.
 
 <CauseTable ticket={4471} {filed} />
 
 <Callout kind="warn">
-Fixing the parser will not close #4471. The other rows keep coming in after it ships.
+Fixing the parser will not close #4471. The hint row and the one-day moves keep coming in after it ships.
 </Callout>
 
 ## The causes
@@ -39,11 +38,11 @@ first. The swap looks the same as `parser`, but it comes only through the form, 
 booking-v3 tenants, and fixing the parser leaves it as it is. The fix is the hint (or reading
 the date the way the hint asks for it).
 
-**`shift`: the date moves one day early.** Nothing is swapped: Tuesday 12 May arrives as
+**One-day move: the date moves one day early** ([#3](https://github.com/tim-phillips/mega-s01e03-dates/issues/3)). Nothing is swapped: Tuesday 12 May arrives as
 Monday 11 May, and a client in Lisbon gets Tuesday while one in Toronto gets Monday. That reads
-like a timezone conversion at midnight, not a date format. The desk had already read these as a
-one-day move (`desk-notes.json`); `causes.ts` now counts them as a cause of their own instead of
-a footnote under `parser`.
+like a timezone conversion at midnight, not a date format. The desk reads these by hand and
+lists them in `desk-notes.json`. The table counts them under `parser`, by tenant, and the note
+under it says how many; fixing the parser will not fix them.
 
 ## Why one ticket held them all
 
@@ -58,7 +57,7 @@ Intake's tag does not split them either: it guesses from the reporter's browser,
 ## What the desk does now
 
 - New date reports go to the ticket of their cause, by tenant and channel ([`causes.ts`](https://github.com/tim-phillips/mega-s01e03-dates/blob/main/src/lib/kb/causes.ts)), not by subject.
-- A report whose date lands a day off goes on `desk-notes.json` and counts under `shift`.
+- A report whose date lands a day off goes on `desk-notes.json` and belongs to #3, wherever the table files it.
 - #4471 stays the `parser` ticket. It closes when the parser fix ships and its row stops growing.
 
 <RenderStamp {signature} />

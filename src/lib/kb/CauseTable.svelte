@@ -1,6 +1,7 @@
 <script lang="ts">
   import reports from '#lib/data/reports-4471.json';
-  import { groupByCause, ticketCause, uniqueById, type Cause, type Report } from '#lib/kb/causes';
+  import notes from '#lib/data/desk-notes.json';
+  import { groupByCause, readAs, ticketCause, uniqueById, type Cause, type Report } from '#lib/kb/causes';
   import { tenantOf } from '#lib/kb/locales';
 
   // filed: the ticket each cause was split out into, by URL.
@@ -44,9 +45,17 @@
   </tbody>
 </table>
 
+{#each groups as g (g.cause)}
+  {@const moved = readAs(g, notes.oneDayMove)}
+  {#if moved}
+    <p class="note">{moved} reports read as a one-day move; filed under <code>{g.cause}</code> by tenant.</p>
+  {/if}
+{/each}
+
 <style>
   .sum { font-size: 1.1rem; }
   .tags { color: var(--muted); font-size: 0.85em; }
+  .note { color: var(--muted); font-size: 0.85em; }
   .wrong td { background: var(--warn-bg); }
   .wrong td:last-child { color: var(--warn); font-weight: 600; }
 </style>
