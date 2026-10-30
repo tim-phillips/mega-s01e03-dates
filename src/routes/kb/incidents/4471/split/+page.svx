@@ -1,0 +1,64 @@
+---
+layout: runbook
+title: '#4471 split · not one bug'
+owner: support desk
+status: open
+reviewed: 2026-10-30
+signature: Tim Phillips
+---
+
+<script>
+  import CauseTable from '#lib/kb/CauseTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const repo = 'https://github.com/tim-phillips/mega-s01e03-dates/issues';
+  const filed = { parser: `${repo}/1`, hint: `${repo}/2`, shift: `${repo}/3` };
+</script>
+
+[#4471](/kb/incidents/4471) says one bug, one fix queued. Its reports say otherwise: each cause
+below is its own bug with its own fix, and each now has its own ticket. The fix queued for the
+parser closes only its own row.
+
+<CauseTable ticket={4471} {filed} />
+
+<Callout kind="warn">
+Fixing the parser will not close #4471. The other rows keep coming in after it ships.
+</Callout>
+
+## The causes
+
+**`parser`: day and month swapped.** The shared parser reads every date month first. A tenant
+that writes the day first books 7 April and gets an invite for 4 July. Every tenant on file
+writes the day first, so this is the bulk of the ticket, through the app, email and the
+booking-v2 form.
+
+**`hint`: the booking-v3 form asks for the month first.** Its date field prints `MM/DD/YYYY`
+under it. People type what the hint says, and the form reads the date the tenant's way, day
+first. The swap looks the same as `parser`, but it comes only through the form, only at
+booking-v3 tenants, and fixing the parser leaves it as it is. The fix is the hint (or reading
+the date the way the hint asks for it).
+
+**`shift`: the date moves one day early.** Nothing is swapped: Tuesday 12 May arrives as
+Monday 11 May, and a client in Lisbon gets Tuesday while one in Toronto gets Monday. That reads
+like a timezone conversion at midnight, not a date format. The desk had already read these as a
+one-day move (`desk-notes.json`); `causes.ts` now counts them as a cause of their own instead of
+a footnote under `parser`.
+
+## Why one ticket held them all
+
+Triage merges on the subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)), and
+all three causes come in under the same subjects: "Month and day swapped?", "Wrong day on the
+invite", "Date is wrong". Matching subjects never looked at the body, the tenant or the form,
+which is where the causes differ.
+
+Intake's tag does not split them either: it guesses from the reporter's browser, and the
+"tagged as" column above shows it disagreeing with the tenant in every row.
+
+## What the desk does now
+
+- New date reports go to the ticket of their cause, by tenant and channel ([`causes.ts`](https://github.com/tim-phillips/mega-s01e03-dates/blob/main/src/lib/kb/causes.ts)), not by subject.
+- A report whose date lands a day off goes on `desk-notes.json` and counts under `shift`.
+- #4471 stays the `parser` ticket. It closes when the parser fix ships and its row stops growing.
+
+<RenderStamp {signature} />
